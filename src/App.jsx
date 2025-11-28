@@ -1,18 +1,54 @@
 import { Button, DatePicker, Form, Input, InputNumber, Modal, Select } from "antd"
-import React from "react"
+import { useForm } from "antd/es/form/Form"
+import moment from "moment"
+import React, { useState } from "react"
+import { CSVLink } from "react-csv"
 
 
 const App = () => {
+
+  const [form] = useForm()
+
+  const [data,setData] = useState([])
+  const [open,setOpen] = useState(false)
+
+  const handleClose = ()=>{
+
+    form.resetFields()
+    setOpen(false)
+
+
+  }
+
+
+const createRecord = (values) =>{
+
+  values.date = moment(values.date).toDate()
+  setData([
+    ...data,
+    values
+  ])
+handleClose()
+
+}
+
+const download = ()=>{
+
+}
+
   return(
 
     <div className="min-h-screen bg-gray-200 space-y-8 py-12">
       <h1 className="text-4xl font-bold text-center">CSV Example</h1>
       <div className="bg-white rounded-lg p-4 w-9/12 mx-auto flex items-center gap-5">
-         <button className="bg-indigo-600 text-white font-medium px-12 py-3 rounded">New Record</button>
-    
+         <button className="bg-indigo-600 text-white font-medium px-12 py-3 rounded" onClick={()=>setOpen(true)}>New Record</button>
+         <CSVLink data={data}>
+             <button className="bg-cyan-600 text-white font-medium px-12 py-3 rounded" >Export to CSV</button>
+          </CSVLink>
       </div>
        <div className="bg-white rounded-lg p-4 w-9/12 mx-auto">
         <table className="w-full">
+          <thead>
           <tr className="text-left bg-rose-500 text-white">
             <th className="pl-4 py-3">Coustomer's Name</th>
             <th>Mobile</th>
@@ -22,20 +58,27 @@ const App = () => {
             <th>Status</th>
             <th>Date</th>
           </tr>
-          <tr className="text-left bg-white border-b border-b-gray-200 text-black/60">
-             <td className="pl-4 py-3">Aman</td>
-             <td>14785239</td>
-             <td>amam.vns98@gmail.com</td>
-             <td>Book</td>
-             <td>500</td>
-             <td>pending</td>
-             <td>27 Nov 2025 ,09:00 Am</td>
+          </thead>
+          <tbody>
+         {
+          data.map((item,index)=>(
+             <tr className="text-left bg-white border-b border-b-gray-200 text-black/60" key={index}>
+             <td className="pl-4 py-3">{item.customerName}</td>
+             <td>{item.customerMobile}</td>
+             <td>{item.customerEmail}</td>
+             <td>{item.product}</td>
+             <td>{item.amount}</td>
+             <td>{item.status}</td>
+             <td>{moment(item.date).format('MMM DD YYYY, hh:mm A')}</td>
           </tr>
+          ))
+         }
+          </tbody>
         </table>
     
       </div>
-      <Modal open={open} footer={null}>
-        <Form layout="vertical" onFinish={createRecord}>
+      <Modal open={open} footer={null} onCancel={handleClose}>
+        <Form form={form} layout="vertical" onFinish={createRecord}>
           <Form.Item
           label="Customer Name"
           name="customerName"
@@ -57,13 +100,7 @@ const App = () => {
           >
             <Input size="large" placeholder="example@email.com"/>
           </Form.Item>
-          <Form.Item
-          label="Customer Name"
-          name="customerName"
-          rules={[{required:true}]}
-          >
-            <Input/>
-          </Form.Item>
+          
           <Form.Item
           label="Product"
           name="product"
